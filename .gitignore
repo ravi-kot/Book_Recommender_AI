@@ -1,0 +1,67 @@
+# ✅ API keys and secret config files
+.env
+*.env
+.env.*
+*.key
+*.pem
+*.p12
+*.crt
+*.secret
+
+# ✅ Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ✅ Virtual environments
+.venv/
+env/
+venv/
+
+# ✅ Node modules (if using JS tools)
+node_modules/
+
+# ✅ Jupyter and IPython junk
+.ipynb_checkpoints/
+
+# ✅ System files
+.DS_Store
+Thumbs.db
+*.swp
+
+# ✅ Logs and runtime artifacts
+*.log
+*.pid
+*.sqlite
+*.db
+
+# ✅ Test/coverage artifacts
+htmlcov/
+coverage.xml
+.cache/
+.pytest_cache/
+
+# ✅ IDE/project config
+.vscode/
+.idea/
+*.code-workspace
+
+# # ✅ Datasets or exports (optional)
+# *.csv
+# *.xlsx
+# *.tsv
+*.json
+*.npz
+*.npy
+
+
+*.ipynb
+*.py
+*.zip
+tempCodeRunnerFile.py
+123.py
+LLM_BOOK_Recommender.zip
+__pycache__/
+*.pkl
+*.pt
+*.log

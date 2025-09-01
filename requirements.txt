@@ -1,0 +1,20 @@
+streamlit
+pandas
+numpy
+python-dotenv
+langchain
+langchain-community
+langchain-openai
+langchain-chroma
+langchain-text-splitters
+plotly
+openai
+tqdm
+transformers
+torch
+<<<<<<< HEAD
+chromadb
+=======
+chromadb[uvicorn]
+sentence-transformers
+>>>>>>> 23fee96f190c274708a663496483d83c9bb2e783
