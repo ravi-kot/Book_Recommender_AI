@@ -1,0 +1,21 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "installCommand": "npm install",
+  "devCommand": "npm run dev",
+  "regions": ["iad1"],
+  "functions": {
+    "app/api/search/route.ts": {
+      "maxDuration": 30
+    },
+    "api/recommend/index.py": {
+      "runtime": "python3.9",
+      "maxDuration": 60,
+      "memory": 3008
+    }
+  },
+  "env": {
+    "PYTHON_VERSION": "3.9"
+  }
+}
