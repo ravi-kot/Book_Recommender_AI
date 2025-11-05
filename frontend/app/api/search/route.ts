@@ -1,93 +1,110 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// This is a placeholder API route that you'll need to connect to your backend
-// For now, it returns mock data to test the frontend
+/**
+ * Book Search API Route
+ * Calls the Python serverless function for book recommendations
+ * Similar to Streamlit app: downloads from Google Drive and uses FAISS search
+ */
 
 export async function POST(request: NextRequest) {
   try {
     const { query, category, tone } = await request.json()
 
     // Validate input
-    if (!query || typeof query !== 'string') {
+    if (!query || typeof query !== 'string' || !query.trim()) {
       return NextResponse.json(
-        { error: 'Query is required and must be a string' },
+        { error: 'Query is required and must be a non-empty string' },
         { status: 400 }
       )
     }
 
-    // TODO: Replace this with actual API call to your Python backend
-    // You'll need to:
-    // 1. Set up your Python backend (Flask/FastAPI) to serve the book recommendations
-    // 2. Update this endpoint to call your backend API
-    // 3. Handle the embeddings and FAISS search on the backend
-
-    // Mock response for now
-    const mockBooks = [
-      {
-        isbn13: "9781234567890",
-        title: "The Great Adventure",
-        authors: "Jane Smith",
-        description: "An epic journey through unknown lands filled with mystery and wonder.",
-        thumbnail: "https://via.placeholder.com/300x400/667eea/ffffff?text=Book+Cover",
-        average_rating: 4.5,
-        num_pages: 350,
-        simple_category: "Fantasy",
-        joy: 0.8,
-        surprise: 0.6,
-        anger: 0.1,
-        fear: 0.3,
-        sadness: 0.2
-      },
-      {
-        isbn13: "9780987654321",
-        title: "Mystery Manor",
-        authors: "John Doe",
-        description: "A thrilling detective story set in an old mansion with dark secrets.",
-        thumbnail: "https://via.placeholder.com/300x400/764ba2/ffffff?text=Book+Cover",
-        average_rating: 4.2,
-        num_pages: 280,
-        simple_category: "Mystery",
-        joy: 0.2,
-        surprise: 0.9,
-        anger: 0.1,
-        fear: 0.8,
-        sadness: 0.3
-      },
-      {
-        isbn13: "9781122334455",
-        title: "Heart's Journey",
-        authors: "Sarah Johnson",
-        description: "A touching romance that explores love, loss, and second chances.",
-        thumbnail: "https://via.placeholder.com/300x400/f093fb/ffffff?text=Book+Cover",
-        average_rating: 4.7,
-        num_pages: 320,
-        simple_category: "Romance",
-        joy: 0.9,
-        surprise: 0.4,
-        anger: 0.1,
-        fear: 0.1,
-        sadness: 0.6
+    // Call Python serverless function
+    // In Vercel, Python serverless functions are accessible at /api/recommend
+    // The Python function is at frontend/api/recommend/index.py
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || '/api/recommend'
+    
+    let response
+    try {
+      // Build the full URL for the Python serverless function
+      let fullUrl: string
+      
+      if (backendUrl.startsWith('/')) {
+        // Relative URL - construct full URL for Vercel
+        const protocol = request.headers.get('x-forwarded-proto') || 'http'
+        const host = request.headers.get('host') || request.headers.get('x-vercel-deployment-url') || 'localhost:3000'
+        fullUrl = `${protocol}://${host}${backendUrl}`
+      } else {
+        // External URL - use as is
+        fullUrl = backendUrl
       }
-    ]
+      
+      console.log(`Calling backend at: ${fullUrl}`)
+      
+      response = await fetch(fullUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          query: query.trim(), 
+          category: category || 'All', 
+          tone: tone || 'All' 
+        }),
+      })
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`Backend error (${response.status}):`, errorText)
+        throw new Error(`Backend responded with ${response.status}: ${errorText}`)
+      }
 
-    return NextResponse.json({
-      books: mockBooks,
-      query,
-      category,
-      tone,
-      total: mockBooks.length
-    })
+      const data = await response.json()
+      
+      // Validate response structure
+      if (!data.books || !Array.isArray(data.books)) {
+        throw new Error('Invalid response format from backend')
+      }
+
+      return NextResponse.json({
+        books: data.books,
+        query: data.query || query,
+        category: data.category || category || 'All',
+        tone: data.tone || tone || 'All',
+        total: data.total || data.books.length
+      })
+
+    } catch (fetchError) {
+      console.error('Error calling backend:', fetchError)
+      
+      // Fallback: Return error with helpful message
+      return NextResponse.json(
+        { 
+          error: 'Failed to get recommendations. Please ensure the Python backend is running and configured correctly.',
+          details: process.env.NODE_ENV === 'development' ? fetchError.message : undefined
+        },
+        { status: 500 }
+      )
+    }
 
   } catch (error) {
     console.error('Search API error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
+}
+
+// Handle OPTIONS for CORS
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  })
 }
 
 // Example of how to connect to your actual backend:

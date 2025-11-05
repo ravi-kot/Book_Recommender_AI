@@ -1,0 +1,9 @@
+# Requirements for Vercel Python serverless function
+# Minimal dependencies for book recommendation API
+
+pandas>=2.0.0
+numpy>=1.24.0
+faiss-cpu>=1.7.4
+gdown>=4.6.0
+openai>=1.0.0
+

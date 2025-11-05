@@ -1,0 +1,9 @@
+# Minimal requirements for Vercel serverless function
+# Only include what's needed for the API endpoint
+
+pandas>=2.0.0
+numpy>=1.24.0
+faiss-cpu>=1.7.4
+gdown>=4.6.0
+openai>=1.0.0
+
